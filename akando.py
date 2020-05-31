@@ -15,11 +15,11 @@ def plot_save(filename, data):
         fp.write(str(data[i])+'\n')
     fp.close()
 
-def distance(vec1, vec2):
+def distance(vector_1, vector_2):
     """Simple distance calculations using vectors"""
-    a = vec1 - vec2
-    dist = np.sqrt((a*a).sum())
-    return dist
+    a = vector_1 - vector_2
+    d = np.sqrt((a*a).sum())
+    return d
 
 def smooth(data, window):
     """Local averaging function where data is the input data and window is the linear dimension of the smoothing kernel"""
