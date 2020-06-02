@@ -59,6 +59,50 @@ def smooth(data, window):
     #End the 2D
     return ans
 
+def baseline(data, WN=100):
+    L = len(data)
+    pts = []
+    for i in range(0, L, WN):
+        a = data[i:i+WN]
+        mn = a.min()
+        x = np.nonzero(np.equal(a, mn))[0][0]
+        pts.append([i+x, mn])
+    nd = np.zeros(len(data), float)
+    nsegs = len(pts) - 1
+    for i in range(nsegs):
+        x1, y1 = pts[i]
+        x2, y2 = pts[i+1]
+        m = (y2 - y1) / (x2 - x1)
+        b = y1 - m * x1
+        w = np.arange(x1, x2)
+        y = m * w + b
+        nd[x1:x2] = data[x1:x2] - y
+    #Create vector containing 0 if nd is less than zero.
+    mask = np.greater_equal(nd, 0)
+    #New new data.
+    nnd = mask * nd
+    return nnd
+
+def range_histogram(indata, nbins, mn=-1, mx=-1):
+    """Creates a histogram based on the input data and the desired number of bins."""
+    ans = np.zeros(nbins)
+    L = len(indata)
+    data = indata + 0
+    fix = 0
+    if mn == -1 and mx == -1:
+        # No limits were given so create an autoscale.
+        mx = indata.max() * 1.01
+        mn = indata.min()
+    else:
+        mx *= 1.01
+    data = (indata - mn) / (mx-mn) * nbins
+    print(data.max())
+    hst = np.zeros(nbins, int)
+    for i in range(L):
+        k = int(data[i])
+        hst[k] += 1
+    return hst
+
 
 if __name__ == "__main__":
     main()
