@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy as sp
+from scipy import fftpack
+
+
 
 def main():
     """Set of generic functions which are useful in multiple types of situations."""
@@ -102,6 +104,58 @@ def range_histogram(indata, nbins, mn=-1, mx=-1):
         k = int(data[i])
         hst[k] += 1
     return hst
+
+def linear_regression(x, y):
+    """Returns the slope and b. x and Y are vectors."""
+    sxy = (x * y + 0.0).sum() #Ensures at least a float type
+    sx = (x + 0.0).sum()
+    sy = (y + 0.0).sum()
+    sx2 = (x * x + 0.0).sum()
+    n = len(x)
+    m = (n * sxy - sx * sy) / (n * sx2 - sx * sx)
+    b = (sy - m * sx) / n
+    return m, b
+
+def circle(size, loc, rad):
+    b1, b2 = indices(size)
+    b1, b2 = b1 - loc[0], b2 - loc[1]
+    mask = b1 * b1 + b2 * b2
+    mask = less_equal(mask, rad * rad).astype(int)
+    return mask
+
+def correlate(a, b):
+    """Fourier space correlation."""
+    n = len(a.shape())
+    if n == 1:
+        A = fftpack.fft(a)
+        B = fftpack.fft(b)
+        C = A * B.conjugate()
+        d = fftpack.ifft(C);
+        d = Swap(d);
+    elif n == 2:
+        A = fftpack.fft2(a)
+        B = fftpack.fft2(b)
+        C = A * B.conjugate()
+        d = fftpack.ifft(C)
+        d = Swap(d)
+    return d
+
+def Swap(A):
+    """Performs a quadrant swap"""
+    if len(A.shape) == 2:
+        (v, h) = A.shape
+        ans = zeros(A.shape, A.dtype)
+        ans[0:v/2, 0:h/2] = A[v/2:v, h/2:h]
+        ans[0:v/2, h/2:h] = A[v/2:v, 0:h/2]
+        ans[v/2:v, h/2:h] = A[0:v/2, 0:h/2]
+        ans[v/2:v, 0:h/2] = A[0:v/2, h/2:h]
+    elif len(A.shape) == 1:
+        ans[0:v/2] = A[v/2:v]
+        ans[v/2:v] = A[0:v/2]
+    else: #odd number of elements
+        ans[0:v/2] = A[v-v/2:v]
+        ans[v/2:v] = A[0:v/2 + 1]
+    return ans
 
 
 if __name__ == "__main__":
