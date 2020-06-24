@@ -117,6 +117,7 @@ def linear_regression(x, y):
     return m, b
 
 def circle(size, loc, rad):
+    """Creates a matrix with the dimension size that is a circle."""
     b1, b2 = indices(size)
     b1, b2 = b1 - loc[0], b2 - loc[1]
     mask = b1 * b1 + b2 * b2
