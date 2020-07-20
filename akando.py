@@ -118,10 +118,10 @@ def linear_regression(x, y):
 
 def circle(size, loc, rad):
     """Creates a matrix with the dimension size that is a circle."""
-    b1, b2 = indices(size)
+    b1, b2 = np.indices(size)
     b1, b2 = b1 - loc[0], b2 - loc[1]
     mask = b1 * b1 + b2 * b2
-    mask = less_equal(mask, rad * rad).astype(int)
+    mask = np.less_equal(mask, rad * rad).astype(int)
     return mask
 
 def correlate(a, b):
@@ -145,7 +145,7 @@ def Swap(A):
     """Performs a quadrant swap"""
     if len(A.shape) == 2:
         (v, h) = A.shape
-        ans = zeros(A.shape, A.dtype)
+        ans = np.zeros(A.shape, A.dtype)
         ans[0:v/2, 0:h/2] = A[v/2:v, h/2:h]
         ans[0:v/2, h/2:h] = A[v/2:v, 0:h/2]
         ans[v/2:v, h/2:h] = A[0:v/2, 0:h/2]
