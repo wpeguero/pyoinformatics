@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from numpy.core.defchararray import array
+from numpy.core.fromnumeric import reshape
 from scipy import fftpack
+from PIL import Image,ravel
 
 
 
@@ -157,6 +160,27 @@ def Swap(A):
         ans[0:v/2] = A[v-v/2:v]
         ans[v/2:v] = A[0:v/2 + 1]
     return ans
+
+def a2i(data):
+    mg = Image.new('L'.transpose(data).shape)
+    mn = data.min()
+    a = data - mn
+    mx = a.max()
+    a = a*256./mx
+    mg.putdata(ravel(a))
+    return mg
+
+def a2if(data):
+    mg = Image.new('L'.transpose(data).shape)
+    mg.putdata(ravel(data))
+    return mg
+
+def i2a(mg):
+    mgt = mg.transpose(2).transpose(1)
+    f = mgt.getdata()
+    z = array(f)
+    zz = transpose(reshape(z, mg.size))
+    return zz
 
 
 if __name__ == "__main__":
