@@ -1,7 +1,6 @@
 """Reads the Gene databases and processes the raw data into useful information."""
-
 from os import error
-
+from string import maketrans
 
 def parse_DNA(filename):
     """Extracts the DNA sequence from .gbk files."""
@@ -89,3 +88,94 @@ def find_splices(data, loc):
     en = int(data[dots+2:p2])
     numbs.append((st, en))
     return numbs
+
+def gene_locs(data, keylocs):
+    """Extracts all of the start and end locations for the genes in the data."""
+    genes = []
+    for i in range(len(keylocs)):
+        #Get this line and look for join or complement.
+        end = data.find('\n', keylocs[i])
+        temp = data[keylocs[i]: end]
+        joinf = 'join' in temp
+        compf = 'complement' in temp
+        #Get the extracts
+        c = 0
+        if compf == True: c = 1
+        if joinf == True:
+            numbs = find_splices(data, keylocs[i])
+            genes.append((numbs, compf))
+        else:
+            sten = easy_start_end(data, keylocs[1], c)
+            genes.append(([sten], compf))
+    return genes
+
+def complement(st):
+    """Function used to extract the coding splices associated with the set complement flag."""
+    ##Works for smaller versions.
+    #st = st.replace('a', 'T')
+    #st = st.replace('t', 'A')
+    #st = st.replace('c', 'G')
+    #st = st.replace('g', 'C')
+    ##Faster when dealing with larger files.
+    table = maketrans('acgt', 'tgca')
+    st = st.translate(table)
+    st = st[::-1]
+    return st
+
+def get_coding_dna(dna, genesi):
+    """Extracts the coding DNA for a single gene. Uses the original dna string and one member of the list genelocs."""
+    #dna from parse_dna
+    #genesi is genlocs[i] from gene_locs
+    codedna = ''
+    N = len(genesi[0]) #number of splices
+    for i in range(N):
+        st, en = genesi[0][i]
+        codedna += dna[st-1:en]
+        #Complement flag
+        if genesi[1]:
+            codedna = complement(codedna)
+    return codedna
+
+def get_codons():
+    """Creates a dictionary of codons and uses a for loop to lowercase all of the information, and to translate raw dna to it's respective amino acid."""
+    CODONS = ( 
+        ('ATA','I'), ('ATC','I'), ('ATT','I'), ('ATG','M'), 
+        ('ACA','T'), ('ACC','T'), ('ACG','T'), ('ACT','T'), 
+        ('AAC','N'), ('AAT','N'), ('AAA','K'), ('AAG','K'), 
+        ('AGC','S'), ('AGT','S'), ('AGA','R'), ('AGG','R'),                  
+        ('CTA','L'), ('CTC','L'), ('CTG','L'), ('CTT','L'), 
+        ('CCA','P'), ('CCC','P'), ('CCG','P'), ('CCT','P'), 
+        ('CAC','H'), ('CAT','H'), ('CAA','Q'), ('CAG','Q'), 
+        ('CGA','R'), ('CGC','R'), ('CGG','R'), ('CGT','R'), 
+        ('GTA','V'), ('GTC','V'), ('GTG','V'), ('GTT','V'), 
+        ('GCA','A'), ('GCC','A'), ('GCG','A'), ('GCT','A'), 
+        ('GAC','D'), ('GAT','D'), ('GAA','E'), ('GAG','E'), 
+        ('GGA','G'), ('GGC','G'), ('GGG','G'), ('GGT','G'), 
+        ('TCA','S'), ('TCC','S'), ('TCG','S'), ('TCT','S'), 
+        ('TTC','F'), ('TTT','F'), ('TTA','L'), ('TTG','L'), 
+        ('TAC','Y'), ('TAT','Y'), ('TAA','p'), ('TAG','p'), 
+        ('TGC','C'), ('TGT','C'), ('TGA','p'), ('TGG','W') 
+    )
+    for i in CODONS:
+        codons[i[0].lower()] = i[1]
+    return codons
+
+def codons_to_protein(codedna, codons):
+    protein = ""
+    for i in range(0, len(codedna), 3):
+        codon = codedna[i:i+3]
+        protein += codons[codon]
+    return protein
+
+def get_amino(data, loc):
+    """Gets the amino acids from the """
+    #Get the amino acids
+    trans = data.find('/translation', loc)
+    #find the second "
+    quot = data.find('"', trans + 15)
+    #Extract 
+    prot = data[trans+14:quot]
+    #Remove newlines and blanks
+    prot = prot.replace('\n', '')
+    prot = prot.replace(' ','')
+    return prot
