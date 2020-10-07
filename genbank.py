@@ -179,3 +179,32 @@ def get_amino(data, loc):
     prot = prot.replace('\n', '')
     prot = prot.replace(' ','')
     return prot
+
+def decoder_dict():
+    """Creates a decoding dictionary"""
+    ddct = {}
+    ddct['0'] = 'AA'; ddct['1'] = 'AC'; ddct['2'] = 'AG'
+    ddct['3'] = 'AT'; ddct['4'] = 'CA'; ddct['5'] = 'CC'
+    ddct['6'] = 'CG'; ddct['7'] = 'CT'; ddct['8'] = 'GA'
+    ddct['9'] = 'GC'; ddct['A'] = 'GG'; ddct['B'] = 'GT'
+    ddct['C'] = 'TA'; ddct['D'] = 'TC'; ddct['E'] = 'TG'
+    ddct['F'] = 'TT'
+    return ddct
+
+def dna_from_ans1(filename, ddct):
+    """Finds the ncba2na tag and the single quotes following the tag, extracts the string within the single quotes and converts the string to ans1."""
+    #Read in data
+    with open(filename, 'r') as fp:
+        a = fp.read()
+        fp.close()
+    #Extract DNA
+    loc = a.find('ncbi2na')
+    start = a.find("'", loc) + 1
+    end = a.find("'", start+2)
+    cpdna = a[start:end] #compressed DNA
+    cpdna = cpdna.replace('\n', '')
+    #Decode
+    dna = ''
+    for i in range(len(cpdna)):
+        dna += ddct[cpdna[i]]
+    return dna
